@@ -4,27 +4,37 @@ using UnityEngine;
 
 public class Poolable : MonoBehaviour
 {
-    [HideInInspector]
-    public int poolableID;
-    public bool IsPooled
+    private void OnEnable()
     {
-        get
+        if(MotherPool!=null)
         {
-            return isPooled;
+            
+            MotherPool.activeItems.Add(gameObject);
+            MotherPool.inactiveItems.Remove(gameObject);
+            
         }
-        set
+        
+    }
+    public Pool MotherPool { get; set; }
+    public void SetPool(Pool pool)
+    {
+        MotherPool = pool;
+        transform.parent = MotherPool.poolObjectInHierarchy;
+        if (gameObject.activeInHierarchy)
         {
-            isPooled = value;
-            gameObject.SetActive(!value);
+            MotherPool.activeItems.Add(gameObject);
+            MotherPool.inactiveItems.Remove(gameObject);
+        }
+        else
+        {
+            MotherPool.activeItems.Remove(gameObject);
+            MotherPool.inactiveItems.Add(gameObject);
         }
     }
 
-    bool isPooled;
-
-    private void OnDestroy()
+    private void OnDisable()
     {
-        ObjectPoolsManager.GetInstance().Remove(this);
+        MotherPool.activeItems.Remove(gameObject);
+        MotherPool.inactiveItems.Add(gameObject);
     }
-
-
 }
