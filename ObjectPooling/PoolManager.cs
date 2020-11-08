@@ -4,43 +4,27 @@ using UnityEngine;
 
 public class PoolManager : Singleton<PoolManager>
 {
-    readonly Dictionary<int, Pool>  Pools = new Dictionary<int, Pool>();
+    readonly Dictionary<int, Pool> Pools = new Dictionary<int, Pool>();
 
-    public  GameObject GetObject(GameObject prefab)
+    private Pool GetPool(GameObject prefab)
     {
-        Pool ObjectPool = GetAPool(prefab);
+        int PoolKey = prefab.GetInstanceID();
+        if(Pools.ContainsKey(PoolKey))
+        {
+            return Pools[PoolKey];
+        }
+        else
+        {
+            Pool newPool = new Pool(prefab);
+            Pools.Add(PoolKey, newPool);
+            return newPool;
+        }    
+    }
         
-
-        GameObject newObject = ObjectPool.GetObject();      // get the object from the pool that existed / we created 
-
-        if (newObject != null)  // if that object isn't null, and is deactivated (look Pool.cs), return it
-        {
-            return newObject;
-        }
-        else  // else, create a new one, add it to the pool items and then return it
-        {
-            
-            newObject = Instantiate(prefab);
-            ObjectPool.AddToPool(newObject);
-            return newObject;
-        }
-    }
-
-    private Pool GetAPool(GameObject prefab)
+    public GameObject GetObject(GameObject prefab, Vector3 position)
     {
-        int poolKey = prefab.GetInstanceID();
-        Pool ObjectPool;
-
-        if (!Pools.ContainsKey(poolKey)) // if pool doesn't exist, create one
-        {
-            ObjectPool = new Pool(prefab.name + " pool");
-            Pools.Add(poolKey, ObjectPool);
-        }
-        else // else get the one that exists
-        {
-            ObjectPool = Pools[poolKey];
-        }
-
-        return ObjectPool;
+        Pool ObjectPool = GetPool(prefab);
+        return ObjectPool.GetObject(position);
     }
+
 }

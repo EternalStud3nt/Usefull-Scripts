@@ -1,41 +1,57 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Pool
 {
-    public string name;
-    public Transform poolObjectInHierarchy { get; private set; }
-    public List<GameObject> inactiveItems;
-    public List<GameObject> activeItems;
-
-    public Pool(string name)
+    readonly GameObject  prefab;
+    readonly List<GameObject> items;
+    readonly GameObject poolInHierarchy;
+    public Pool(GameObject prefab)
     {
-        this.name = name;
-        poolObjectInHierarchy = new GameObject(name).transform;
-        inactiveItems = new List<GameObject>();
-        activeItems = new List<GameObject>();
+        this.prefab = prefab;
+        items = new List<GameObject>();
+        poolInHierarchy = new GameObject(prefab.name + " POOL");
+        poolInHierarchy.transform.parent = PoolManager.GetInstance().gameObject.transform;
+        CreateObjects();
     }
 
-    public void AddToPool(GameObject gameObj) // add to pool and don't change activeness
+    private void CreateObjects()
     {
-        if(gameObj.GetComponent<Poolable>()==null)
+        for(int i=0; i<5; i++)
         {
-            gameObj.AddComponent<Poolable>();
-            gameObj.GetComponent<Poolable>().SetPool(this);
+            GameObject newItem = Object.Instantiate(prefab);
+            newItem.transform.parent = poolInHierarchy.transform;
+            newItem.SetActive(false);
+            items.Add(newItem);
         }
     }
 
-    public GameObject GetObject()
+    public GameObject GetObject(Vector3 position)
     {
-        if (inactiveItems.Count > 0)
+        for(int i=0; i<items.Count; i++)
         {
-            GameObject obj = inactiveItems[0];
-            obj.SetActive(true);
-            return obj;
+            GameObject current = items[i];
+
+            if(!current.activeInHierarchy)
+            {
+                current.transform.position = position;
+                current.SetActive(true);            
+                return current;
+            }
         }
-        else
-            return null;
+ 
+        return CreateNewObject(position);
     }
 
+    private GameObject CreateNewObject(Vector3 position)
+    {
+        GameObject newObj = Object.Instantiate(prefab);
+        newObj.transform.position = position;
+        items.Add(newObj);
+        newObj.SetActive(true);
+        newObj.transform.parent = poolInHierarchy.transform;
+        return newObj;
+    }
 }

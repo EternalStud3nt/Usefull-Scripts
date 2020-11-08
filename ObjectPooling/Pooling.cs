@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Pooling
 {
-    public static GameObject GetObject(GameObject prefab)
+    public static GameObject GetObject(GameObject prefab, Vector3 position)
     {
-        return PoolManager.GetInstance().GetObject(prefab);
+        return PoolManager.GetInstance().GetObject(prefab, position);
     }
 }
