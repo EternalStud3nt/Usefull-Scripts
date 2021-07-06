@@ -14,7 +14,7 @@ public class AudioManager : MonoBehaviour
             this.gameObj = gameObj;
         }
     }
-    public AudioManager Instance { get; private set; }
+    public static AudioManager Instance { get; private set; }
     private enum AudioType { Music, SFX, SFXLooped }
 
     #region Variables
