@@ -6,18 +6,18 @@ public class AudioManager : MonoBehaviour
 {
     struct AudioPlayer
     {
-        public AudioSource source;
-        public GameObject obj;
-        public AudioPlayer(AudioSource source, GameObject obj)
+        public AudioSource audioSource;
+        public GameObject gameObj;
+        public AudioPlayer(AudioSource audioSource, GameObject gameObj)
         {
-            this.source = source;
-            this.obj = obj;
+            this.audioSource = audioSource;
+            this.gameObj = gameObj;
         }
     }
     public AudioManager Instance { get; private set; }
     private enum AudioType { Music, SFX, SFXLooped }
 
-
+    #region Variables
     [SerializeField] GameObject sfxPlayer;
     [SerializeField] GameObject sfxLoopedPlayer;
     [SerializeField] GameObject musicPlayer;
@@ -28,7 +28,11 @@ public class AudioManager : MonoBehaviour
 
     private readonly Dictionary<int, AudioPlayer> playingLoopedSFX = new Dictionary<int, AudioPlayer>();
     List<int> uniqueAudioIdUsed = new List<int>();
-
+    #endregion
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
         for (int i = 0; i < 5; i++)
@@ -95,7 +99,7 @@ public class AudioManager : MonoBehaviour
         {
             foreach (AudioPlayer player in sfxSources)
             {
-                if (!player.obj.activeInHierarchy)
+                if (!player.gameObj.activeInHierarchy)
                 {
                     return player;
                 }
@@ -105,7 +109,7 @@ public class AudioManager : MonoBehaviour
         {
             foreach (AudioPlayer player in musicSources)
             {
-                if (!player.obj.activeInHierarchy)
+                if (!player.gameObj.activeInHierarchy)
                 {
                     return player;
                 }
@@ -115,7 +119,7 @@ public class AudioManager : MonoBehaviour
         {
             foreach (AudioPlayer player in sfxLoopedSources)
             {
-                if (!player.obj.activeInHierarchy)
+                if (!player.gameObj.activeInHierarchy)
                 {
                     return player;
                 }
@@ -123,19 +127,21 @@ public class AudioManager : MonoBehaviour
         }
         return CreateAudioPlayer(type);
     }
+
+    #region Play_Stop_Audio
     public void PlaySFX(AudioClip clip)
     {
         AudioPlayer player = GetAudioPlayer(AudioType.SFX);
-        player.obj.SetActive(true);
-        player.source.PlayOneShot(clip);
-        StartCoroutine(DisableGameObject(clip.length, player.obj));
+        player.gameObj.SetActive(true);
+        player.audioSource.PlayOneShot(clip);
+        StartCoroutine(DisableGameObject(clip.length, player.gameObj));
     }
     public void PlaySFXLooped(AudioClip clip, int uniqueID)
     {
         AudioPlayer player = GetAudioPlayer(AudioType.SFXLooped);
-        player.obj.SetActive(true);
-        player.source.clip = clip;
-        player.source.Play();
+        player.gameObj.SetActive(true);
+        player.audioSource.clip = clip;
+        player.audioSource.Play();
         playingLoopedSFX.Add(uniqueID, player);
     }
 
@@ -144,8 +150,8 @@ public class AudioManager : MonoBehaviour
         bool audioPlayerExists = playingLoopedSFX.TryGetValue(uniqueID, out AudioPlayer player);
         if (audioPlayerExists)
         {
-            player.source.Stop();
-            player.obj.SetActive(false);
+            player.audioSource.Stop();
+            player.gameObj.SetActive(false);
             playingLoopedSFX.Remove(uniqueID);
         }
 
@@ -154,10 +160,11 @@ public class AudioManager : MonoBehaviour
     public void PlayMusic(AudioClip clip)
     {
         AudioPlayer player = GetAudioPlayer(AudioType.Music);
-        player.obj.SetActive(true);
-        player.source.PlayOneShot(clip);
-        StartCoroutine(DisableGameObject(clip.length, player.obj));
+        player.gameObj.SetActive(true);
+        player.audioSource.PlayOneShot(clip);
+        StartCoroutine(DisableGameObject(clip.length, player.gameObj));
     }
+    #endregion
 
     private IEnumerator DisableGameObject(float timer, GameObject obj)
     {
